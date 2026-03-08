@@ -1,4 +1,5 @@
 import os
+import traceback
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -8,6 +9,7 @@ app = FastAPI(title="Invoicr API", version="1.0.0")
 
 cors_origins = [
     "https://invoicr-mu.vercel.app",
+    "http://localhost:3000",
 ]
 
 app.add_middleware(
@@ -19,6 +21,18 @@ app.add_middleware(
 )
 
 API_KEY = os.getenv("API_KEY", "")
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch unhandled exceptions so CORS headers are still added to the response."""
+    tb = traceback.format_exc()
+    print(f"Unhandled error on {request.method} {request.url.path}: {exc}\n{tb}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"},
+    )
+
 
 @app.middleware("http")
 async def check_api_key(request: Request, call_next):

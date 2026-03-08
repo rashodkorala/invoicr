@@ -28,7 +28,13 @@ def create_invoice(payload: InvoiceCreate):
     total = subtotal + tax_amount
 
     invoice_data = payload.dict(exclude={"line_items"})
-    invoice_data.update({"subtotal": subtotal, "total": total, "client_id": str(payload.client_id)})
+    invoice_data.update({
+        "subtotal": subtotal,
+        "total": total,
+        "client_id": str(payload.client_id),
+        "date": str(payload.date),
+        "status": payload.status.value if hasattr(payload.status, "value") else str(payload.status),
+    })
 
     inv_res = supabase.table("invoices").insert(invoice_data).execute()
     invoice_id = inv_res.data[0]["id"]
@@ -37,14 +43,20 @@ def create_invoice(payload: InvoiceCreate):
     supabase.table("line_items").insert(items_data).execute()
 
     # Bump next invoice number in settings
-    supabase.table("settings").update({"next_invoice_number": supabase.table("settings").select("next_invoice_number").single().execute().data["next_invoice_number"] + 1}).neq("id", "00000000-0000-0000-0000-000000000000").execute()
+    try:
+        settings_res = supabase.table("settings").select("id, next_invoice_number").limit(1).execute()
+        if settings_res.data:
+            next_num = settings_res.data[0]["next_invoice_number"] + 1
+            supabase.table("settings").update({"next_invoice_number": next_num}).eq("id", settings_res.data[0]["id"]).execute()
+    except Exception:
+        pass  # Don't fail invoice creation if settings bump fails
 
     return get_invoice(invoice_id)
 
 
 @router.patch("/{invoice_id}/status", response_model=Invoice)
 def update_status(invoice_id: str, status: InvoiceStatus):
-    supabase.table("invoices").update({"status": status}).eq("id", invoice_id).execute()
+    supabase.table("invoices").update({"status": status.value}).eq("id", invoice_id).execute()
     return get_invoice(invoice_id)
 
 
