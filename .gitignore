@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env/
+
+# Environment variables (keep .env.example)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs & debug
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Misc
+*.pem
