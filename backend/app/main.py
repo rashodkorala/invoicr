@@ -6,9 +6,14 @@ from app.routers import invoices, clients, pdf, settings
 
 app = FastAPI(title="Invoicr API", version="1.0.0")
 
+cors_origins = [
+    "http://localhost:3000",
+    "https://invoicr-mu.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://invoicr.vercel.app"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
