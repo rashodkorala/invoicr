@@ -56,4 +56,19 @@ app.include_router(settings.router, prefix="/settings", tags=["settings"])
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    """Basic health check + optional DB connectivity test."""
+    result = {"status": "ok"}
+    try:
+        from app.utils.supabase import supabase
+        res = supabase.table("clients").select("id").limit(1).execute()
+        result["db"] = "connected"
+        result["clients_table"] = "ok"
+    except Exception as e:
+        result["db"] = f"error: {str(e)}"
+    try:
+        from app.utils.supabase import supabase
+        res = supabase.table("settings").select("id").limit(1).execute()
+        result["settings_table"] = "ok"
+    except Exception as e:
+        result["settings_table"] = f"error: {str(e)}"
+    return result
